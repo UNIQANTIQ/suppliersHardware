@@ -1,5 +1,5 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const credentials = require('../client_secret.json');
+const credentials = require('./client_secret.json');
 
 class SpreadSheet {
     constructor(id) {
