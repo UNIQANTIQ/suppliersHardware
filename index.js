@@ -1,7 +1,7 @@
 
-const { SpreadSheet } = require('./controllers/spreadsheet');
-const { Data } = require('./controllers/data');
-const { HARDWAREOFTHEPAST, CATEGORIES, URL } = require('./data/constants');
+const { SpreadSheet } = require('./spreadsheet');
+const { Data } = require('./data');
+const { HARDWAREOFTHEPAST, CATEGORIES, URL } = require('./constants');
 const sheet = new SpreadSheet(HARDWAREOFTHEPAST);
 const data = new Data();
 
