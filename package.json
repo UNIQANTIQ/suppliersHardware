@@ -1,0 +1,20 @@
+{
+  "name": "suppliershardware",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "google-spreadsheet": "^3.1.15",
+    "nodemailer": "^6.4.18",
+    "playwright": "^1.8.0",
+    "print-message": "^3.0.1"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.8.0-next.1608058261773"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
