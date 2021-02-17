@@ -33,8 +33,11 @@ const getDataByCategory = async (page, category, skipCodes) => {
       if( price ) {
         price = await page.$eval('span[itemprop="price"]', el => {
           const text = el.textContent.trim().replace('.', ',');
-          if( text.endsWith('0') ) {
+          if( text.endsWith('0') && text.slice(-2,-1) !== 0) {
             return text.slice(0,-1);
+          }
+          if ( text.slice(-2) === '00' ) {
+            return text.slice(0,-3)
           }
           return text
         });
