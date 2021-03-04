@@ -29,7 +29,7 @@ class Data {
                     resObj['new price'] = newProductsObj[key].price;
                 } else {
                     resObj['new price'] = newProductsObj[key].price;
-                    resObj['new price - 30%'] = newProductsObj[key]['price - 30%'];
+                    resObj['new price - 20%'] = newProductsObj[key]['price - 20%'];
                 }
                 result.push(resObj);
             } else if(oldProductsObj[key].removed === '1' && newProductsObj[key].removed !== '1') {
@@ -46,9 +46,9 @@ class Data {
                     resObj['new price'] = newProductsObj[key].price;
                 } else {
                     resObj['old price'] = oldProductsObj[key].price,
-                    resObj['old price - 30%'] = oldProductsObj[key]['price - 30%'],
+                    resObj['old price - 20%'] = oldProductsObj[key]['price - 20%'],
                     resObj['new price'] = newProductsObj[key].price;
-                    resObj['new price - 30%'] = newProductsObj[key]['price - 30%'];
+                    resObj['new price - 20%'] = newProductsObj[key]['price - 20%'];
                 }
                 result.push(resObj);
             }
@@ -109,9 +109,9 @@ class Data {
                         name: newProductsObj[key].name,
                         priceChanged: 'YES',
                         'old price': oldProductsObj[key].price,
-                        'old price - 30%': oldProductsObj[key]['price - 30%'],
+                        'old price - 20%': oldProductsObj[key]['price - 20%'],
                         'new price': newProductsObj[key].price,
-                        'new price - 30%': newProductsObj[key]['price - 30%'],
+                        'new price - 20%': newProductsObj[key]['price - 20%'],
                     })
                 }
             }
@@ -136,7 +136,7 @@ class Data {
                 if ( app === 'hotp' ) {
                     addObj[change.id].quantity = change['new amount']
                 } else {
-                    addObj[change.id]['price - 30%'] = change['new price - 30%'];
+                    addObj[change.id]['price - 20%'] = change['new price - 20%'];
                 }
                 Object.assign(obj, addObj)
             }
@@ -149,7 +149,7 @@ class Data {
             if(change.priceChanged === 'YES') {
                 obj[change.id].price = change['new price']
                 if ( app !== 'hotp' ) {
-                  obj[change.id]['price - 30%'] = change['new price - 30%']
+                  obj[change.id]['price - 20%'] = change['new price - 20%']
                 }
             }
             if(change.amountChanged === 'YES') {
