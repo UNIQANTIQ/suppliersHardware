@@ -21,13 +21,23 @@ class SpreadSheet {
         return rows.map(row => row.id);
     }
 
-    async getInitialData() {
+    async getInitialData(app) {
         await this.initialize();
         const rows = await this.spreadSheet.sheetsByTitle['AllProducts'].getRows();
         return rows.map(row => {
-            const { id, category, name, price, quantity, removed} = row;
-            return {id, category, name,	price, quantity, removed}
+            const { id, category, name, price, removed} = row;
+            if( app === 'hotp') {
+                return {id, category, name,	price, removed, quantity: row.quantity};
+            } else {
+                return {id, category, name,	price, removed, 'price - 30%': row['price - 30%']};
+            }
         });
+    }
+
+    async getCategories() {
+        await this.initialize();
+        const rows = await this.spreadSheet.sheetsByTitle['Categories'].getRows();
+        return rows.map(row => row.url);
     }
     
     async clearAnalizeResult() {
@@ -39,31 +49,35 @@ class SpreadSheet {
                                 'old amount', 'new amount']);
     }
 
-    async clearInitialData() {
+    async clearInitialData(app) {
+        const headerArray = app === 'hotp'
+                                    ? ['id', 'category', 'name', 'price', 'quantity', 'removed'] 
+                                    : ['id', 'category', 'name', 'price', 'price - 30%', 'removed'];
         await this.initialize();
         await this.spreadSheet.sheetsByTitle['AllProducts'].clear();
         await this.spreadSheet.sheetsByTitle['AllProducts']
-                  .setHeaderRow(['id', 'category', 'name', 'price',	'quantity',	'removed']);
+                  .setHeaderRow(headerArray);
     }
 
-    async writeAllProducts(products) {
-        await this.clearInitialData();
+    async writeAllProducts(products, app) {
+        await this.clearInitialData(app);
         await this.initialize();
         await this.spreadSheet.sheetsByTitle['AllProducts'].addRows(products);
     }
 
-    async writeAnalizeResult(results) {
+    async writeAnalizeResult(results, app) {
         const currentdate = new Date();
         const dateTime = `${currentdate.getDate()}/${currentdate.getMonth()+1}/${currentdate.getFullYear()}_${currentdate.getHours()}-${currentdate.getMinutes()}`;
-        const title = `AnalizeResult_${dateTime}`
+        const title = `AnalizeResult_${dateTime}`;
+        const headerValues = app === 'hotp' 
+                             ? ['id', 'category', 'name', 'new', 'removed', 'appeared', 
+                             'priceChanged', 'old price', 'new price', 'amountChanged', 
+                             'old amount', 'new amount']
+                             : ['id', 'category', 'name', 'new', 'removed', 'appeared', 
+                             'priceChanged', 'old price', 'old price - 30%', 'new price',
+                             'new price - 30%']
         await this.initialize();
-        await this.spreadSheet.addSheet({ 
-            title, 
-            headerValues: 
-            ['id', 'category', 'name', 'new', 'removed', 'appeared', 
-             'priceChanged', 'old price', 'new price', 'amountChanged', 
-             'old amount', 'new amount']
-        });
+        await this.spreadSheet.addSheet({ title, headerValues });
         await this.initialize();
         console.log(title);
         await this.spreadSheet.sheetsByTitle[title].addRows(results);

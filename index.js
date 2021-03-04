@@ -1,121 +1,55 @@
+const myArgs = process.argv.slice(2);
 
 const { SpreadSheet } = require('./spreadsheet');
 const { Data } = require('./data');
-const { HARDWAREOFTHEPAST, CATEGORIES, URL } = require('./constants');
-const sheet = new SpreadSheet(HARDWAREOFTHEPAST);
-const data = new Data();
-
-const {
-  chromium
-} = require('playwright-chromium');
+const { HARDWAREOFTHEPAST, HARDWAREOFTHEPAST_CATEGORIES, DLAWLESS } = require('./constants');
+const { HOTP } = require('./hotp'); 
 const printMessage = require('print-message');
+const { Dlawless } = require('./dlawless');
 
-
-const getDataByCategory = async (page, category, skipCodes) => {
-  const result = [];
-  await page.goto(`${URL}/${category}?searching=Y&sort=7&cat=1955&show=1000&page=1`, {waitUntil: 'load', timeout: 0});
-  await page.waitForLoadState('domcontentloaded');
-  const productUrls = await page.$$eval('.v-product > .v-product__title',
-      (es, skip) => es.reduce((res, el) => {
-        const code = el.title.split(' ')[0];
-        if (!skip.includes(code)) {
-          res.push(el.href);
-        }
-        return res;
-      },[]), skipCodes);     
-  //toDo return back j < number
-  for(let i = 0; i < productUrls.length; i++) {
-     try {
-      await page.goto(productUrls[i]);
-      const name = await page.$eval('span[itemprop="name"]', el => el.textContent.trim());
-      //there are products without price and quantity.We should support it:
-      let price =  await page.$('span[itemprop="price"]');
-      if( price ) {
-        price = await page.$eval('span[itemprop="price"]', el => {
-          const text = el.textContent.trim().replace('.', ',');
-          if( text.endsWith('0') && text.slice(-2,-1) !== 0) {
-            return text.slice(0,-1);
-          }
-          if ( text.slice(-2) === '00' ) {
-            return text.slice(0,-3)
-          }
-          return text
-        });
-      } else {
-        price = 'no_price'
-      }
-      const quantity = await page.$eval('div[itemprop="offers"]', el => {
-        const q = el.textContent.match(/Quantity in Stock:(\d{0,5})/);
-        if (q) {
-          return q[1]
-        } else {
-          return 'no_quantity'
-        }
-      });
-      const productCode = await page.$eval('.product_code', el => el.textContent.trim());
-      result.push({ id: productCode, category, name, price, quantity, removed: 0});
-     } catch(e) {
-       console.error(`Smth wrong with a product ${productUrls[i]}`);
-       console.log(e);
-     }
-
-  }
-  return result;
-}
-
-const getAllProductsData = async (categories, skipCodes) => {
-  let resultArr = [];
-  const browser = await chromium.launch({ headless: true});
-  const page = await browser.newPage();
-  for (let i = 0; i < categories.length; i++) {
-     const products = await getDataByCategory(page, categories[i], skipCodes);
-     resultArr = [...resultArr, ...products];
-     printMessage([
-      `Completed scrapping the category ${categories[i]}`
-    ]);
-  }
-  await browser.close();
-  return resultArr; 
-}
+const data = new Data();
+const app = myArgs[0] === 'hotp' ? new HOTP() : new Dlawless();
+const sheet_id = myArgs[0] === 'hotp' ? HARDWAREOFTHEPAST : DLAWLESS;
 
 (async () => {
-  const skipCodes = await sheet.getSkipCodes();
-  const initialData = await sheet.getInitialData();
-  printMessage([
-    `Please, be patient :)`,
-    `We are scanning all products!`
-  ]);
-  const scrapData = await Promise.all([ getAllProductsData([CATEGORIES[0]], skipCodes),
-                                  getAllProductsData([CATEGORIES[1], CATEGORIES[2]], skipCodes),
-                                  getAllProductsData([CATEGORIES[3], CATEGORIES[4]], skipCodes),
-                                  getAllProductsData([CATEGORIES[5], CATEGORIES[6]], skipCodes)]);
-  // const actualData = await getAllProductsData([CATEGORIES[3]], skipCodes);
-  const actualData = scrapData.reduce((acc, i) => [...acc, ...i], []);
-
-  if(!initialData.length) {
-    printMessage([
-      `Looks like it is first run of the script.`,
-      `We will store all data in the AllProducts sheet.`
-    ]);
-    await sheet.writeAllProducts(actualData);
-  } else {
-    const initialObj = initialData.reduce((acc, prev) => {
-      acc[prev.id] = prev;
-      return acc; }, {});
-    const actualObj = actualData.reduce((acc, prev) => {
-      acc[prev.id] = prev;
-      return acc; }, {});
-    const removedProducts = data.findRemovedProducts(initialObj, actualObj);
-    const newProducts = data.findNewProducts(initialObj, actualObj);
-    const diffProducts = data.findDiffProducts(initialObj, actualObj);
-    const changelog = [...removedProducts, ...newProducts, ...diffProducts];
-    const updatedInitialData = data.updateInitial(initialObj, changelog);
-    await sheet.clearInitialData();
-    await sheet.writeAllProducts(updatedInitialData);
-    await sheet.writeAnalizeResult(changelog);
-    printMessage([
-      `Script has been completed.`,
-      `Please open your Google Sheet and check the AnalizeResult sheet.`
-    ]);
-  }
-})();
+    let actualData;
+    const sheet = new SpreadSheet(sheet_id);
+    const skipCodes = await sheet.getSkipCodes();
+    const initialData = await sheet.getInitialData(myArgs[0]);
+    if ( myArgs[0] !== 'hotp' ) {
+      const categories = await sheet.getCategories();
+      actualData = await app.getAllProducts(categories, skipCodes);
+    } else {
+      const scrapData = await Promise.all([ app.getAllProductsData([HARDWAREOFTHEPAST_CATEGORIES[0]], skipCodes),
+                                            app.getAllProductsData([HARDWAREOFTHEPAST_CATEGORIES[1], HARDWAREOFTHEPAST_CATEGORIES[2]], skipCodes),
+                                            app.getAllProductsData([HARDWAREOFTHEPAST_CATEGORIES[3], HARDWAREOFTHEPAST_CATEGORIES[4]], skipCodes),
+                                            app.getAllProductsData([HARDWAREOFTHEPAST_CATEGORIES[5], HARDWAREOFTHEPAST_CATEGORIES[6]], skipCodes)]);
+      actualData = scrapData.reduce((acc, i) => [...acc, ...i], []);
+    }
+    if(!initialData.length) {
+      printMessage([
+        `Looks like it is first run of the script.`,
+        `We will store all data in the AllProducts sheet.`
+      ]);
+      await sheet.writeAllProducts(actualData, myArgs[0]);
+    } else {
+      const initialObj = initialData.reduce((acc, prev) => {
+        acc[prev.id] = prev;
+        return acc; }, {});
+      const actualObj = actualData.reduce((acc, prev) => {
+        acc[prev.id] = prev;
+        return acc; }, {});
+      const removedProducts = data.findRemovedProducts(initialObj, actualObj);
+      const newProducts = data.findNewProducts(initialObj, actualObj, myArgs[0]);
+      const diffProducts = app === 'hotp' ? data.findDiffProductsHotp(initialObj, actualObj) : data.findDiffProductsDll(initialObj, actualObj);
+      const changelog = [...removedProducts, ...newProducts, ...diffProducts];
+      const updatedInitialData = data.updateInitial(initialObj, changelog, myArgs[0]);
+      await sheet.clearInitialData();
+      await sheet.writeAllProducts(updatedInitialData, myArgs[0]);
+      await sheet.writeAnalizeResult(changelog, myArgs[0]);
+      printMessage([
+        `Script has been completed.`,
+        `Please open your Google Sheet and check the AnalizeResult sheet.`
+      ]);
+    }
+  })();

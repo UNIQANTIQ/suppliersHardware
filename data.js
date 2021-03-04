@@ -14,35 +14,49 @@ class Data {
         return result;
     }
     //find added and appeared products
-    findNewProducts(oldProductsObj, newProductsObj) {
+    findNewProducts(oldProductsObj, newProductsObj, app) {
         const result = [];
         for(let key in newProductsObj) {
             if(!oldProductsObj[key]) {
-                result.push({
+                const resObj = {
                     id: newProductsObj[key].id,
                     category: newProductsObj[key].category,
                     name: newProductsObj[key].name,
-                    new: 'YES',
-                    'new price': newProductsObj[key].price,
-                    'new amount': newProductsObj[key].quantity,
-                });
-            } else if(oldProductsObj[key].removed === '1') {
-                result.push({
+                    new: 'YES'
+                };
+                if ( app === 'hotp' ) {
+                    resObj['new amount'] = newProductsObj[key].quantity;
+                    resObj['new price'] = newProductsObj[key].price;
+                } else {
+                    resObj['new price'] = newProductsObj[key].price;
+                    resObj['new price - 30%'] = newProductsObj[key]['price - 30%'];
+                }
+                result.push(resObj);
+            } else if(oldProductsObj[key].removed === '1' && newProductsObj[key].removed !== '1') {
+                const resObj = {
                     id: newProductsObj[key].id,
                     category: newProductsObj[key].category,
                     name: newProductsObj[key].name,
                     appeared: 'YES',
-                    'old price': oldProductsObj[key].price,
-                    'new price': newProductsObj[key].price,
-                    'old amount': oldProductsObj[key].quantity,
-                    'new amount': newProductsObj[key].quantity
-                });
+                };
+                if ( app === 'hotp' ) {
+                    resObj['old amount'] = oldProductsObj[key].quantity,
+                    resObj['new amount'] = newProductsObj[key].quantity;
+                    resObj['old price'] = oldProductsObj[key].price,
+                    resObj['new price'] = newProductsObj[key].price;
+                } else {
+                    resObj['old price'] = oldProductsObj[key].price,
+                    resObj['old price - 30%'] = oldProductsObj[key]['price - 30%'],
+                    resObj['new price'] = newProductsObj[key].price;
+                    resObj['new price - 30%'] = newProductsObj[key]['price - 30%'];
+                }
+                result.push(resObj);
             }
         }
         return result;
     }
 
-    findDiffProducts(oldProductsObj, newProductsObj) {
+    findDiffProductsHotp(oldProductsObj, newProductsObj) {
         const result = [];
         for(let key in newProductsObj) {
             if(oldProductsObj[key] && oldProductsObj[key].removed === '0') {
@@ -84,7 +98,28 @@ class Data {
         return result;
     }
 
-    updateInitial(initialObj, changelog) {
+    findDiffProductsDll(oldProductsObj, newProductsObj) {
+        const result = [];
+        for(let key in newProductsObj) {
+            if(oldProductsObj[key] && newProductsObj[key].removed === oldProductsObj[key].removed) {
+                if(newProductsObj[key].price !== oldProductsObj[key].price) {
+                    result.push({
+                        id: newProductsObj[key].id,
+                        category: newProductsObj[key].category,
+                        name: newProductsObj[key].name,
+                        priceChanged: 'YES',
+                        'old price': oldProductsObj[key].price,
+                        'old price - 30%': oldProductsObj[key]['price - 30%'],
+                        'new price': newProductsObj[key].price,
+                        'new price - 30%': newProductsObj[key]['price - 30%'],
+                    })
+                }
+            }
+        }
+        return result;
+    }
+
+    updateInitial(initialObj, changelog, app) {
         const resultArr = [];
         const obj = {...initialObj};
         changelog.forEach(change => {
@@ -98,6 +133,11 @@ class Data {
                     quantity: change['new amount'],
                     removed: 0
                 }
+                if ( app === 'hotp' ) {
+                    addObj[change.id].quantity = change['new amount']
+                } else {
+                    addObj[change.id]['price - 30%'] = change['new price - 30%'];
+                }
                 Object.assign(obj, addObj)
             }
             if(change.removed === 'YES') {
@@ -108,6 +148,9 @@ class Data {
             }
             if(change.priceChanged === 'YES') {
                 obj[change.id].price = change['new price']
+                if ( app !== 'hotp' ) {
+                  obj[change.id]['price - 30%'] = change['new price - 30%']
+                }
             }
             if(change.amountChanged === 'YES') {
                 obj[change.id].quantity = change['new amount']
