@@ -75,11 +75,6 @@ class HOTP {
     await browser.close();
     return resultArr; 
    }
-
-
-    
-    
-    
 }
 
 module.exports = { HOTP }
