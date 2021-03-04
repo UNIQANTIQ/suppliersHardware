@@ -63,7 +63,7 @@ class HOTP {
 
    async getAllProductsData(categories, skipCodes) {
     let resultArr = [];
-    const browser = await chromium.launch({ headless: false});
+    const browser = await chromium.launch({ headless: true});
     const page = await browser.newPage();
     for (let i = 0; i < categories.length; i++) {
        const products = await this.getDataByCategory(page, categories[i], skipCodes);
