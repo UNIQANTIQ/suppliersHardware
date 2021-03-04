@@ -23,7 +23,7 @@ class Dlawless {
                   const name = item.getAttribute('data-name');
                   const price = item.getAttribute('data-price');
                   const priceNum = Number.parseFloat(price);
-                  const discountPrice = priceNum - (priceNum * 0.3);
+                  const discountPrice = priceNum - (priceNum * 0.2);
                   const addButtonPresent = item.innerText.includes('ADD TO CART');
     
                   return { 
