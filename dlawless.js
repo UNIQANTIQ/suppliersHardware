@@ -31,7 +31,7 @@ class Dlawless {
                       category, 
                       name, 
                       price: price.replace('.', ','), 
-                      'price - 30%': discountPrice.toFixed(2).replace('.', ','), 
+                      'price - 20%': discountPrice.toFixed(2).replace('.', ','), 
                       removed: addButtonPresent ? '0' : '1' 
                     };
                }).filter(p => !args.skipCodes.some(c => p.id.includes(c)));
