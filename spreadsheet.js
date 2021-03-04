@@ -29,7 +29,7 @@ class SpreadSheet {
             if( app === 'hotp') {
                 return {id, category, name,	price, removed, quantity: row.quantity};
             } else {
-                return {id, category, name,	price, removed, 'price - 30%': row['price - 30%']};
+                return {id, category, name,	price, removed, 'price - 20%': row['price - 20%']};
             }
         });
     }
@@ -52,7 +52,7 @@ class SpreadSheet {
     async clearInitialData(app) {
         const headerArray = app === 'hotp'
                                     ? ['id', 'category', 'name', 'price', 'quantity', 'removed'] 
-                                    : ['id', 'category', 'name', 'price', 'price - 30%', 'removed'];
+                                    : ['id', 'category', 'name', 'price', 'price - 20%', 'removed'];
         await this.initialize();
         await this.spreadSheet.sheetsByTitle['AllProducts'].clear();
         await this.spreadSheet.sheetsByTitle['AllProducts']
@@ -74,8 +74,8 @@ class SpreadSheet {
                              'priceChanged', 'old price', 'new price', 'amountChanged', 
                              'old amount', 'new amount']
                              : ['id', 'category', 'name', 'new', 'removed', 'appeared', 
-                             'priceChanged', 'old price', 'old price - 30%', 'new price',
-                             'new price - 30%']
+                             'priceChanged', 'old price', 'old price - 20%', 'new price',
+                             'new price - 20%']
         await this.initialize();
         await this.spreadSheet.addSheet({ title, headerValues });
         await this.initialize();
