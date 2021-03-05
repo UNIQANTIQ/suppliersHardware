@@ -51,19 +51,26 @@ class HOTP {
           }
         });
         const productCode = await page.$eval('.product_code', el => el.textContent.trim());
-        result.push({ id: productCode, category, name, price, quantity, removed: 0});
+        let resObj = { id: productCode, category, name, price, quantity, removed: 0};
+        if (price === 'no_price') {
+          resObj['price - 30%'] = 'no_price';
+        } else {
+          const priceNum = Number.parseFloat(price);
+          const discountPrice = priceNum - (priceNum * 0.3);
+          resObj['price - 30%'] = discountPrice.toFixed(2).replace('.', ',')
+        }
+        result.push(resObj);
        } catch(e) {
          console.error(`Smth wrong with a product ${productUrls[i]}`);
          console.log(e);
        }
-  
     }
     return result;
    }
 
    async getAllProductsData(categories, skipCodes) {
     let resultArr = [];
-    const browser = await chromium.launch({ headless: true});
+    const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     for (let i = 0; i < categories.length; i++) {
        const products = await this.getDataByCategory(page, categories[i], skipCodes);

@@ -27,6 +27,7 @@ class Data {
                 if ( app === 'hotp' ) {
                     resObj['new amount'] = newProductsObj[key].quantity;
                     resObj['new price'] = newProductsObj[key].price;
+                    resObj['new price - 30%'] = newProductsObj[key]['price - 30%'];
                 } else {
                     resObj['new price'] = newProductsObj[key].price;
                     resObj['new price - 20%'] = newProductsObj[key]['price - 20%'];
@@ -43,7 +44,9 @@ class Data {
                     resObj['old amount'] = oldProductsObj[key].quantity,
                     resObj['new amount'] = newProductsObj[key].quantity;
                     resObj['old price'] = oldProductsObj[key].price,
+                    resObj['old price - 30%'] = oldProductsObj[key]['price - 30%'],
                     resObj['new price'] = newProductsObj[key].price;
+                    resObj['new price - 30%'] = newProductsObj[key]['price - 30%'];
                 } else {
                     resObj['old price'] = oldProductsObj[key].price,
                     resObj['old price - 20%'] = oldProductsObj[key]['price - 20%'],
@@ -67,7 +70,9 @@ class Data {
                         name: newProductsObj[key].name,
                         priceChanged: 'YES',
                         'old price': oldProductsObj[key].price,
+                        'old price - 30%': oldProductsObj[key]['price - 30%'],
                         'new price': newProductsObj[key].price,
+                        'new price - 30%': newProductsObj[key]['price - 30%']
                     })
                 }
                 if (newProductsObj[key].price === oldProductsObj[key].price && newProductsObj[key].quantity !== oldProductsObj[key].quantity) {
@@ -87,7 +92,9 @@ class Data {
                         name: newProductsObj[key].name,
                         priceChanged: 'YES',
                         'old price': oldProductsObj[key].price,
+                        'old price - 30%': oldProductsObj[key]['price - 30%'],
                         'new price': newProductsObj[key].price,
+                        'new price - 30%': newProductsObj[key]['price - 30%'],
                         amountChanged: 'YES',
                         'old amount': oldProductsObj[key].quantity,
                         'new amount': newProductsObj[key].quantity
@@ -130,11 +137,11 @@ class Data {
                     category: change.category,
                     name: change.name,
                     price: change['new price'],
-                    quantity: change['new amount'],
                     removed: 0
                 }
                 if ( app === 'hotp' ) {
                     addObj[change.id].quantity = change['new amount']
+                    addObj[change.id]['price - 30%'] = change['new price - 30%'];
                 } else {
                     addObj[change.id]['price - 20%'] = change['new price - 20%'];
                 }
@@ -150,6 +157,8 @@ class Data {
                 obj[change.id].price = change['new price']
                 if ( app !== 'hotp' ) {
                   obj[change.id]['price - 20%'] = change['new price - 20%']
+                } else {
+                  obj[change.id]['price - 30%'] = change['new price - 30%']
                 }
             }
             if(change.amountChanged === 'YES') {

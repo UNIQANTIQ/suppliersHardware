@@ -41,7 +41,7 @@ const sheet_id = myArgs[0] === 'hotp' ? HARDWAREOFTHEPAST : DLAWLESS;
         return acc; }, {});
       const removedProducts = data.findRemovedProducts(initialObj, actualObj);
       const newProducts = data.findNewProducts(initialObj, actualObj, myArgs[0]);
-      const diffProducts = app === 'hotp' ? data.findDiffProductsHotp(initialObj, actualObj) : data.findDiffProductsDll(initialObj, actualObj);
+      const diffProducts = myArgs[0] === 'hotp' ? data.findDiffProductsHotp(initialObj, actualObj) : data.findDiffProductsDll(initialObj, actualObj);
       const changelog = [...removedProducts, ...newProducts, ...diffProducts];
       const updatedInitialData = data.updateInitial(initialObj, changelog, myArgs[0]);
       await sheet.clearInitialData();
