@@ -9,7 +9,7 @@ class Dlawless {
     }
 
     async getAllProducts(categories, skipCodes) {
-        const browser = await chromium.launch({ headless: false});
+        const browser = await chromium.launch({ headless: true});
         const page = await browser.newPage();
         let scrapData = [];
         for (let i=0; i < categories.length; i++) {
@@ -53,7 +53,7 @@ class Dlawless {
         return resultData.reduce((acc, i) => [...acc, ...i], []);;
     }
     async checkAllAddToCards(products) {
-        const browser = await chromium.launch({ headless: false});
+        const browser = await chromium.launch({ headless: true});
         const page = await browser.newPage();
         const resultArray = [...products];
         for( let i=0; i < resultArray.length; i++) {
