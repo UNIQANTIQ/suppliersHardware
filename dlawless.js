@@ -1,4 +1,5 @@
 const { chromium } = require('playwright-chromium');
+const _ = require('lodash');
 const printMessage = require('print-message');
 
 class Dlawless {
@@ -8,7 +9,7 @@ class Dlawless {
     }
 
     async getAllProducts(categories, skipCodes) {
-        const browser = await chromium.launch({ headless: true});
+        const browser = await chromium.launch({ headless: false});
         const page = await browser.newPage();
         let scrapData = [];
         for (let i=0; i < categories.length; i++) {
@@ -16,7 +17,9 @@ class Dlawless {
             await this.open(page, category);
             const products = await page.$$eval('.item-boxes > li', (items, args) => {
                return items.map(item => {
-                  const id = item.getElementsByClassName('star_container')[0]
+                  const url = item.querySelector('.name a')
+                                  .getAttribute('href');
+                  const id = item.querySelector('.star_container')
                                  .getAttribute('class')
                                  .split(' ')[1];
                   const category = args.category.match(/\.com\/(.*)\.html/)[1]               
@@ -26,7 +29,8 @@ class Dlawless {
                   const discountPrice = priceNum - (priceNum * 0.2);
                   const addButtonPresent = item.innerText.includes('ADD TO CART');
     
-                  return { 
+                  return {
+                      url,
                       id, 
                       category, 
                       name, 
@@ -39,7 +43,35 @@ class Dlawless {
             scrapData = [...scrapData, ...products];
         };
         await browser.close();
-        return scrapData;
+        const promises = [];
+        const chunksArray = _.chunk(scrapData, Math.round(scrapData.length/5));
+        chunksArray.forEach(arr => promises.push(this.checkAllAddToCards(arr)));
+        printMessage([
+            `Please wait. We are checking all Add to Card buttons!`
+          ]);
+        const resultData = await Promise.all(promises);
+        return resultData.reduce((acc, i) => [...acc, ...i], []);;
+    }
+    async checkAllAddToCards(products) {
+        const browser = await chromium.launch({ headless: false});
+        const page = await browser.newPage();
+        const resultArray = [...products];
+        for( let i=0; i < resultArray.length; i++) {
+            if(!+resultArray[i].removed) {
+                const isAddToCard = await this.isAddToCardOnPage(resultArray[i],page);
+                if(isAddToCard) {
+                    resultArray[i].removed = 0;
+                }
+            }
+        }
+        await browser.close();
+        return resultArray;
+    }
+
+    async isAddToCardOnPage(product,  page) {
+        await this.open(page, `https://www.dlawlesshardware.com/${product.url}`);
+        const addToCard = await page.$('.atc-button');
+        return !!addToCard;
     }
 }
 
