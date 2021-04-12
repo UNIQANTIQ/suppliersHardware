@@ -25,11 +25,11 @@ class SpreadSheet {
         await this.initialize();
         const rows = await this.spreadSheet.sheetsByTitle['AllProducts'].getRows();
         return rows.map(row => {
-            const { id, category, name, price, removed} = row;
+            const {url, id, category, name, price, removed} = row;
             if( app === 'hotp') {
                 return {id, category, name,	price, removed, quantity: row.quantity, 'price - 30%': row['price - 30%']};
             } else {
-                return {id, category, name,	price, removed, 'price - 20%': row['price - 20%']};
+                return {url, id, category, name,	price, removed, 'price - 20%': row['price - 20%']};
             }
         });
     }
@@ -43,7 +43,7 @@ class SpreadSheet {
     async clearInitialData(app) {
         const headerArray = app === 'hotp'
                                     ? ['id', 'category', 'name', 'price', 'price - 30%', 'quantity', 'removed'] 
-                                    : ['id', 'category', 'name', 'price', 'price - 20%', 'removed'];
+                                    : ['url', 'id', 'category', 'name', 'price', 'price - 20%', 'removed'];
         await this.initialize();
         await this.spreadSheet.sheetsByTitle['AllProducts'].clear();
         await this.spreadSheet.sheetsByTitle['AllProducts']
@@ -64,7 +64,7 @@ class SpreadSheet {
                              ? ['id', 'category', 'name', 'new', 'removed', 'appeared', 
                              'priceChanged', 'old price', 'old price - 30%', 'new price',
                              'new price - 30%', 'amountChanged', 'old amount', 'new amount']
-                             : ['id', 'category', 'name', 'new', 'removed', 'appeared', 
+                             : ['url', 'id', 'category', 'name', 'new', 'removed', 'appeared', 
                              'priceChanged', 'old price', 'old price - 20%', 'new price',
                              'new price - 20%']
         await this.initialize();
