@@ -4,6 +4,7 @@ class Data {
         for(let key in oldProductsObj) {
             if(!newProductsObj[key] && oldProductsObj[key].removed === '0') {
                 result.push({
+                    url: oldProductsObj[key].url,
                     id: oldProductsObj[key].id,
                     category: oldProductsObj[key].category,
                     name: oldProductsObj[key].name,
@@ -19,6 +20,7 @@ class Data {
         for(let key in newProductsObj) {
             if(!oldProductsObj[key]) {
                 const resObj = {
+                    url: newProductsObj[key].url,
                     id: newProductsObj[key].id,
                     category: newProductsObj[key].category,
                     name: newProductsObj[key].name,
@@ -35,6 +37,7 @@ class Data {
                 result.push(resObj);
             } else if(oldProductsObj[key].removed === '1' && newProductsObj[key].removed !== '1') {
                 const resObj = {
+                    url: newProductsObj[key].url,
                     id: newProductsObj[key].id,
                     category: newProductsObj[key].category,
                     name: newProductsObj[key].name,
@@ -65,6 +68,7 @@ class Data {
             if(oldProductsObj[key] && oldProductsObj[key].removed === '0') {
                 if(newProductsObj[key].price !== oldProductsObj[key].price && newProductsObj[key].quantity === oldProductsObj[key].quantity) {
                     result.push({
+                        url: newProductsObj[key].url,
                         id: newProductsObj[key].id,
                         category: newProductsObj[key].category,
                         name: newProductsObj[key].name,
@@ -77,6 +81,7 @@ class Data {
                 }
                 if (newProductsObj[key].price === oldProductsObj[key].price && newProductsObj[key].quantity !== oldProductsObj[key].quantity) {
                     result.push({
+                        url: newProductsObj[key].url,
                         id: newProductsObj[key].id,
                         category: newProductsObj[key].category,
                         name: newProductsObj[key].name,
@@ -87,6 +92,7 @@ class Data {
                 }
                 if(newProductsObj[key].price !== oldProductsObj[key].price && newProductsObj[key].quantity !== oldProductsObj[key].quantity) {
                     result.push({
+                        url: newProductsObj[key].url,
                         id: newProductsObj[key].id,
                         category: newProductsObj[key].category,
                         name: newProductsObj[key].name,
@@ -111,6 +117,7 @@ class Data {
             if(oldProductsObj[key] && newProductsObj[key].removed === oldProductsObj[key].removed) {
                 if(newProductsObj[key].price !== oldProductsObj[key].price) {
                     result.push({
+                        url: newProductsObj[key].url,
                         id: newProductsObj[key].id,
                         category: newProductsObj[key].category,
                         name: newProductsObj[key].name,
@@ -133,6 +140,7 @@ class Data {
             if(change.new === 'YES') {
                 let addObj = {};
                 addObj[change.id] = {
+                    url: change.url,
                     id: change.id,
                     category: change.category,
                     name: change.name,
